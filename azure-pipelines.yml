@@ -1,0 +1,72 @@
+stages:
+- stage: Build 
+  jobs:
+  - job: Build
+    pool: 'Hosted Ubuntu 1604'
+    continueOnError: false
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        mavenVersionOption: 'Default'
+        mavenAuthenticateFeed: false
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: false
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/target'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+- stage: Dev_Release
+  jobs:
+  - deployment: dev_database
+    pool: 'Hosted Ubuntu 1604'
+    environment: 'dev-database'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: drop
+              itemPattern: '**/*.zip'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd $(System.ArtifactsDirectory)
+                unzip ./drop/liquibase-demo.zip -d liquibase-demo
+                cd ./liquibase-demo
+                java -jar ./lib/liquibase-core-3.3.0.jar --defaultsFile=./src/main/resources/liquibase.properties update
+- stage: QA_Release
+  jobs:
+  - deployment: qa_database
+    pool: 'Hosted Ubuntu 1604'
+    environment: 'qa-database'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: drop
+              itemPattern: '**/*.zip'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd $(System.ArtifactsDirectory)
+                unzip ./drop/liquibase-demo.zip -d liquibase-demo
+                cd ./drop/liquibase-demo
+                java -jar ./lib/liquibase-core-3.3.0.jar --defaultsFile=./src/main/resources/liquibase.qa.properties update
+

@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>com.mohitgoyalco.databaseautomation.liquibase-demo</groupId>
+  <artifactId>liquibase-demo</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+ 
+  <name>liquibase-demo</name>
+ 
+  <dependencies>
+    <!-- PostgreSQL -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.5</version>
+    </dependency>
+
+    <!-- Liquibase -->
+    <dependency>
+      <groupId>org.liquibase</groupId>
+	    <artifactId>liquibase-core</artifactId>
+	    <version>3.3.0</version>
+    </dependency> 
+  </dependencies>
+ 
+  <build>
+    <finalName>liquibase-demo</finalName>
+    <plugins>
+      <!-- Use Java 1.8 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+ 
+      <!-- User liquibase plugin -->
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>3.0.5</version>
+        <configuration>
+          <propertyFile>src/main/resources/liquibase.properties</propertyFile>
+        </configuration>
+        <!--
+        <executions>
+	        <execution>
+	          <goals>
+		          <goal>update</goal>
+		        </goals>
+	        </execution>
+	      </executions>
+        -->
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <descriptor>src/assembly/assembly.xml</descriptor>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+       </plugin>
+    </plugins>
+  </build>
+</project>
